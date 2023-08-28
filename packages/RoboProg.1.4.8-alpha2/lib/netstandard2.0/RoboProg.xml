@@ -1,0 +1,199 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>RoboProg</name>
+    </assembly>
+    <members>
+        <member name="M:RoboProg.Extensions.Move(RoboProg.Robot,MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double},System.Boolean,System.Double,System.Double,System.Double,System.Double)">
+            <inheritdoc cref="M:RoboProg.Move.#ctor(System.Double[],System.Double[],System.Double,System.Double,System.Double,System.Boolean,System.Double)"/>
+        </member>
+        <member name="M:RoboProg.Extensions.Move(RoboProg.Robot,MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Matrix{System.Double},System.Boolean,System.Double,System.Double,System.Double,System.Double)">
+            <inheritdoc cref="M:RoboProg.Move.#ctor(System.Double[],System.Double[],System.Double,System.Double,System.Double,System.Boolean,System.Double)"/>
+            <param name="orientationMatrix">Target orientation as rotation matrix.</param>
+        </member>
+        <member name="M:RoboProg.Extensions.Move(RoboProg.Robot,System.Double,System.Double,System.Double,MathNet.Numerics.LinearAlgebra.Vector{System.Double},System.Boolean,System.Double,System.Double,System.Double,System.Double)">
+            <inheritdoc cref="M:RoboProg.Move.#ctor(System.Double[],System.Double[],System.Double,System.Double,System.Double,System.Boolean,System.Double)"/>
+        </member>
+        <member name="M:RoboProg.Extensions.MoveJoint(RoboProg.Robot,System.Double[],System.Boolean,System.Double,System.Double,System.Double,System.Double)">
+            <inheritdoc cref="M:RoboProg.Move.#ctor(System.Double[],System.Double,System.Double,System.Double,System.Boolean,System.Double)"/>
+        </member>
+        <member name="M:RoboProg.Extensions.MoveJointDeg(RoboProg.Robot,System.Double[],System.Boolean,System.Double,System.Double,System.Double,System.Double)">
+            <inheritdoc cref="M:RoboProg.Move.#ctor(System.Double[],System.Double,System.Double,System.Double,System.Boolean,System.Double)"/>
+            <param name="jointpos">Target joint positions in degrees.</param>
+        </member>
+        <member name="M:RoboProg.Extensions.MoveJointRel(RoboProg.Robot,System.Double[],System.Boolean,System.Double,System.Double,System.Double,System.Double)">
+            <inheritdoc cref="M:RoboProg.Move.#ctor(System.Double[],System.Double,System.Double,System.Double,System.Boolean,System.Double)"/>
+            <param name="jointpos">Relative joint rotations in rad.</param>
+        </member>
+        <member name="M:RoboProg.Extensions.MoveJointDegRel(RoboProg.Robot,System.Double[],System.Boolean,System.Double,System.Double,System.Double,System.Double)">
+            <inheritdoc cref="M:RoboProg.Move.#ctor(System.Double[],System.Double,System.Double,System.Double,System.Boolean,System.Double)"/>
+            <param name="jointpos">Relative joint rotations in degrees.</param>
+        </member>
+        <member name="M:RoboProg.Extensions.Move(RoboProg.Robot,RoboProg.Pose,RoboProg.MoveParams)">
+            <summary>Move to target pose.</summary>
+            <param name="pose">Target pose, can be TCP or joints, given in mm or rad respectively.</param>
+            <param name="mp">Move parameters as mm^s or rad^s</param>
+        </member>
+        <member name="M:RoboProg.Extensions.Angle(MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double})">
+            <summary>
+            Retrieves the angle required to rotate the first vector into the second.
+            </summary>
+            <returns>The angle in degrees needed to rotate v into v2.</returns>
+        </member>
+        <member name="M:RoboProg.Extensions.GetLocalAxis(MathNet.Numerics.LinearAlgebra.Matrix{System.Double},System.Int32)">
+            <summary>Select row of matrix. Because the Matrix3D class used a transposed representation this is the base vector of the frame.</summary>
+            <param name="m">4x4 transformation matrix</param>
+            <param name="index">Row to select.</param>
+            <returns>3D local axis.</returns>
+        </member>
+        <member name="M:RoboProg.Move.#ctor(MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double},System.Double,System.Double,System.Double,System.Boolean,System.Double)">
+            <inheritdoc cref="M:RoboProg.Move.#ctor(System.Double[],System.Double[],System.Double,System.Double,System.Double,System.Boolean,System.Double)"/>
+        </member>
+        <member name="M:RoboProg.Move.#ctor(System.Double[],System.Double[],System.Double,System.Double,System.Double,System.Boolean,System.Double)">
+            <summary>
+            Move with TCP target. If time > 0 then only time will be used, otherwise the a and v values will be used and time will be ignored. Linear parameter decides whether movel or movej UR command is used. 
+            In case of movel, the a and v values are interpreted as tool acceleration/speed (m/s2 and m/s).
+            In case of movej, the a and v values are interpreted as joint acceleration/speed (rad/s2 and rad/s).
+            </summary>
+            <param name="pos">Target position in mm.</param>
+            <param name="rotVector">Target orientation in axis-angle notation.</param>
+            <param name="linear">Linear or joint interpolation.</param>
+            <param name="time">Time to make the move, seconds.</param>
+            <param name="blendRadius">Radius in mm.</param>
+        </member>
+        <member name="M:RoboProg.Move.#ctor(System.Double[],System.Double,System.Double,System.Double,System.Boolean,System.Double)">
+            <summary>
+            Move with joint target. If time > 0 then only time will be used, otherwise the a and v values will be used and time will be ignored. Linear parameter decides whether movel or movej ur command is used.
+            In case of movel, the a and v values are interpreted as tool acceleration/speed (m/s2 and m/s).
+            In case of movej, the a and v values are interpreted as joint acceleration/speed (rad/s2 and rad/s).
+            </summary>
+            <param name="joints">Target joint positions in rad.</param>
+            <param name="time">Time to make the move, seconds.</param>
+            <param name="linear">Linear or joint interpolation.</param>
+            <param name="blendRadius">Radius in mm.</param>
+        </member>
+        <member name="M:RoboProg.MoveC.#ctor(MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double},MathNet.Numerics.LinearAlgebra.Vector{System.Double},System.Double,System.Double,System.Double,System.Int32)">
+            <summary>
+            See UR script manual for movec
+            </summary>
+        </member>
+        <member name="P:RoboProg.MultimediaTimer.Interval">
+            <summary>
+            The period of the timer in milliseconds.
+            </summary>
+        </member>
+        <member name="P:RoboProg.MultimediaTimer.Resolution">
+            <summary>
+            The resolution of the timer in milliseconds. The minimum resolution is 0, meaning highest possible resolution.
+            </summary>
+        </member>
+        <member name="P:RoboProg.MultimediaTimer.IsRunning">
+            <summary>
+            Gets whether the timer has been started yet.
+            </summary>
+        </member>
+        <member name="M:RoboProg.Network.SendDashboardCommand(System.String,System.String,System.Boolean)">
+            <summary>
+            Available commands: load [urp file to load], play, stop, Power On, Brake release, Shutdown.
+            See UR dashboard web page for complete list
+            </summary>
+            <param name="robotIP"></param>
+            <param name="cmd"></param>
+        </member>
+        <member name="T:HighResolutionTimer.HighResolutionTimer">
+            <summary>
+            Hight precision non overlapping timer
+            Came from 
+            https://stackoverflow.com/a/41697139/548894
+            </summary>
+            <remarks>
+            This implementation guaranteed that Elapsed events 
+            are not overlapped with different threads. 
+            Which is important, because a state of the event handler attached to  Elapsed,
+            may be left unprotected of multi threaded access
+            </remarks>
+        </member>
+        <member name="F:HighResolutionTimer.HighResolutionTimer.TickLength">
+            <summary>
+            Tick time length in [ms]
+            </summary>
+        </member>
+        <member name="F:HighResolutionTimer.HighResolutionTimer.Frequency">
+            <summary>
+            Tick frequency
+            </summary>
+        </member>
+        <member name="F:HighResolutionTimer.HighResolutionTimer.IsHighResolution">
+            <summary>
+            True if the system/operating system supports HighResolution timer
+            </summary>
+        </member>
+        <member name="E:HighResolutionTimer.HighResolutionTimer.Elapsed">
+            <summary>
+            Invoked when the timer is elapsed
+            </summary>
+        </member>
+        <member name="F:HighResolutionTimer.HighResolutionTimer._interval">
+            <summary>
+            The interval of timer ticks [ms]
+            </summary>
+        </member>
+        <member name="F:HighResolutionTimer.HighResolutionTimer._isRunning">
+            <summary>
+            The timer is running
+            </summary>
+        </member>
+        <member name="F:HighResolutionTimer.HighResolutionTimer._thread">
+            <summary>
+             Execution thread
+            </summary>
+        </member>
+        <member name="M:HighResolutionTimer.HighResolutionTimer.#ctor">
+            <summary>
+            Creates a timer with 1 [ms] interval
+            </summary>
+        </member>
+        <member name="M:HighResolutionTimer.HighResolutionTimer.#ctor(System.Single)">
+            <summary>
+            Creates timer with interval in [ms]
+            </summary>
+            <param name="interval">Interval time in [ms]</param>
+        </member>
+        <member name="P:HighResolutionTimer.HighResolutionTimer.Interval">
+            <summary>
+            The interval of a timer in [ms]
+            </summary>
+        </member>
+        <member name="P:HighResolutionTimer.HighResolutionTimer.IsRunning">
+            <summary>
+            True when timer is running
+            </summary>
+        </member>
+        <member name="P:HighResolutionTimer.HighResolutionTimer.UseHighPriorityThread">
+            <summary>
+            If true, sets the execution thread to ThreadPriority.Highest
+            (works after the next Start())
+            </summary>
+            <remarks>
+            It might help in some cases and get things worse in others. 
+            It suggested that you do some studies if you apply
+            </remarks>
+        </member>
+        <member name="M:HighResolutionTimer.HighResolutionTimer.Start">
+            <summary>
+            Starts the timer
+            </summary>
+        </member>
+        <member name="M:HighResolutionTimer.HighResolutionTimer.Stop(System.Boolean)">
+            <summary>
+            Stops the timer
+            </summary>
+            <remarks>
+            This function is waiting an executing thread (which do  to stop and join.
+            </remarks>
+        </member>
+        <member name="P:HighResolutionTimer.HighResolutionTimerElapsedEventArgs.Delay">
+            <summary>/// Real timer delay in [ms]/// </summary>
+        </member>
+    </members>
+</doc>

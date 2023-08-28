@@ -8,17 +8,19 @@ namespace AICheckers
 {
     class AI_Tree : IAI
     {
-        int AI_MAXPLYLEVEL = 2;
+        int AI_MAXPLYLEVEL = 3;
+
+        Move lose = new Move(0,0,0,0);
 
         //Offensive
-        int WEIGHT_CAPTUREPIECE = 2;
-        int WEIGHT_CAPTUREKING = 1;
-        int WEIGHT_CAPTUREDOUBLE = 5;
-        int WEIGHT_CAPTUREMULTI = 10;
+        int WEIGHT_CAPTUREPIECE = 10;
+        int WEIGHT_CAPTUREKING = 11;
+        int WEIGHT_CAPTUREDOUBLE = 13;
+        int WEIGHT_CAPTUREMULTI = 15;
 
         //Defensive
-        int WEIGHT_ATRISK = 3;
-        int WEIGHT_KINGATRISK = 4;
+        int WEIGHT_ATRISK = 0;
+        int WEIGHT_KINGATRISK = 1;
 
         //Strategic
         int WEIGHT_MAKEKING = 1;
@@ -36,7 +38,7 @@ namespace AICheckers
         public Move Process(Square[,] Board)
         {
             Console.WriteLine();
-            Console.WriteLine("AI: Building Game Tree...");
+            //Console.WriteLine("AI: Building Game Tree...");
 
             gameTree = new Tree<Move>(new Move());
 
@@ -58,11 +60,13 @@ namespace AICheckers
             }
 
             Console.WriteLine();
-            Console.WriteLine("AI: Scoring Game Tree...");
+            Console.WriteLine("Robot lép");
 
             ScoreTreeMoves(Board);
 
-            return SumTreeMoves();
+            Move move = SumTreeMoves();
+            
+            return move;
         }
 
         private Square[,] DeepCopy(Square[,] sourceBoard)
@@ -161,7 +165,13 @@ namespace AICheckers
             }
 
             //Return highest score
-            return gameTree.Children.OrderByDescending(o => o.Value.Score).ToList()[0].Value;
+            if(gameTree.Children.Count == 0)
+            {
+                new FormEnd("The AI lost").Show();
+                return lose;
+            }
+            else { return gameTree.Children.OrderByDescending(o => o.Value.Score).ToList()[0].Value; }
+            
         }
 
         private int ScoreMove(Move move, Square[,] board)
@@ -173,6 +183,7 @@ namespace AICheckers
 
             if (move.Captures.Count == 2) score += WEIGHT_CAPTUREDOUBLE;
             if (move.Captures.Count > 2) score += WEIGHT_CAPTUREMULTI;
+            if (board[move.Source.Y, move.Source.X].King) score -= 1;
 
             //Check King Captures
             foreach (Point point in move.Captures)
@@ -212,12 +223,12 @@ namespace AICheckers
             //Subtract score if we are evaluating an opponent's piece
             if (board[move.Source.Y, move.Source.X].Colour != colour) score *= -1;
 
-            Console.WriteLine(
-                "{0,-5} {1} Score: {2,2}",
-                board[move.Source.Y, move.Source.X].Colour.ToString(),
-                move.ToString(),
-                score
-                ); 
+            //Console.WriteLine(
+            //    "{0,-5} {1} Score: {2,2}",
+            //    board[move.Source.Y, move.Source.X].Colour.ToString(),
+            //    move.ToString(),
+            //    score
+            //    ); 
 
             return score;
         }

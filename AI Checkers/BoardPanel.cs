@@ -12,6 +12,7 @@ namespace AICheckers
     public class BoardPanel : Panel
     {
         IAI AI = null;
+        RobotClass robot = new RobotClass();
 
         //Assets
         Image checkerRed = Resources.checkerred;
@@ -41,6 +42,7 @@ namespace AICheckers
 
         Square[,] Board = new Square[8,8];
         
+       
         public BoardPanel()
             : base()
         {
@@ -171,6 +173,7 @@ namespace AICheckers
         
         protected override void OnMouseClick(MouseEventArgs e)
         {
+            
             int clickedX = (int)(((double)e.X / (double)Width) * 8.0d);
             int clickedY = (int)(((double)e.Y / (double)Height) * 8.0d);
 
@@ -194,7 +197,7 @@ namespace AICheckers
                 selectedChecker.X = clickedX;
                 selectedChecker.Y = clickedY;
                 possibleMoves.Clear();
-
+                Console.WriteLine("");
                 Console.WriteLine("Selected Checker: {0}",selectedChecker.ToString());
                 
                 Move[] OpenSquares = Utils.GetOpenSquares(Board, selectedChecker);
@@ -206,25 +209,65 @@ namespace AICheckers
 
         private void MoveChecker(Move move)
         {
+            if (move.Source.Equals(move.Destination))
+            {
+                return;
+            }
+            bool remaining = false;
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    if (Board[i, j].Colour == CheckerColour.Red)
+                    {
+                        remaining = true; }
+                }
+            }
+            if (remaining == false)
+            {
+                new FormEnd("The AI won").Show();
+            }
+            
             Console.WriteLine(move.ToString());
+            if(move.Captures.Count > 0)
+            {
+                Console.WriteLine("Leütött bábuk:");
+                for (int i = 0; i < move.Captures.Count; i++)
+                {
+                    Console.WriteLine(move.Captures[i]);
+                }
+            }
 
             Board[move.Destination.Y, move.Destination.X].Colour = Board[move.Source.Y, move.Source.X].Colour;
             Board[move.Destination.Y, move.Destination.X].King = Board[move.Source.Y, move.Source.X].King;
             ResetSquare(move.Source);
 
-            foreach (Point point in move.Captures)
-                ResetSquare(point);
+            
 
             selectedChecker.X = -1;
             selectedChecker.Y = -1;
 
+            
+
             //Kinging
-            if ((move.Destination.Y == 7 && Board[move.Destination.Y, move.Destination.X].Colour == CheckerColour.Red)
-                || (move.Destination.Y == 0 && Board[move.Destination.Y, move.Destination.X].Colour == CheckerColour.Black))
+            if ((move.Destination.Y == 7 && Board[move.Destination.Y, move.Destination.X].Colour == CheckerColour.Red) && Board[move.Destination.Y, move.Destination.X].King == false)
             {
                 Board[move.Destination.Y, move.Destination.X].King = true;
+                robot.isWKinging();
+                robot.FirstKinging();
+                System.Console.WriteLine("Fehér Dáma");
             }
-
+            else if((move.Destination.Y == 0 && Board[move.Destination.Y, move.Destination.X].Colour == CheckerColour.Black) && Board[move.Destination.Y, move.Destination.X].King == false)
+            {
+                Board[move.Destination.Y, move.Destination.X].King = true;
+                robot.isBKinging();
+                robot.FirstKinging();
+                System.Console.WriteLine("Fekete Dáma");
+            }
+            
+            robot.RobotMoveChecker(this, move);
+            foreach (Point point in move.Captures)
+                ResetSquare(point);
 
             possibleMoves.Clear();
 
@@ -234,10 +277,35 @@ namespace AICheckers
             newPoint.Y = move.Destination.X * squareWidth;
             currentPoint = oldPoint;
             animating = true;
+            bool playerlose = true;
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    if (Board[i, j].Colour == CheckerColour.Red)
+                    {
+                        Point point = new Point(i, j);
+                        
+                        if (PlayerLose(point) == true)
+                        {
+                            playerlose = false;
+                            
+
+                        }
+                    }
+                }
+            }
+            if (playerlose)
+            {
+                new FormEnd("The AI won").Show();
+            }
 
             this.Invalidate();
 
-            AdvanceTurn();
+            
+
+
+                        AdvanceTurn();
         }
 
         private void ResetSquare(Point square)
@@ -270,5 +338,277 @@ namespace AICheckers
             this.SuspendLayout();
             this.ResumeLayout(false);
         }
+
+        private bool PlayerLose(Point p)
+        {
+            bool possibleMove = false;
+            if (Board[p.X, p.Y].King == false)
+            {
+                if (p.Y == 0)
+                {
+                    if (Board[p.X + 1, p.Y + 1].Colour == CheckerColour.Red)
+                    {
+                        possibleMove = false;
+                        return possibleMove;
+                    }
+                    else if (Board[p.X + 1, p.Y + 1].Colour == CheckerColour.Empty)
+                    {
+                        possibleMove = true;
+                        
+                        return possibleMove;
+                    }
+                    else if (p.Y < 6 && p.X< 6 && Board[p.X + 1, p.Y + 1].Colour == CheckerColour.Black && Board[p.X + 2, p.Y + 2].Colour == CheckerColour.Empty)
+                    {
+                        possibleMove = true;
+                        
+                        return possibleMove;
+                    }
+                    else { return false; }
+                }
+                else if (p.Y == 7)
+                {
+                    if (Board[p.X + 1, p.Y - 1].Colour == CheckerColour.Red)
+                    {
+                        possibleMove = false;
+                        return possibleMove;
+                    }
+                    else if (Board[p.X + 1, p.Y - 1].Colour == CheckerColour.Empty)
+                    {
+                        possibleMove = true;
+                        
+                        return possibleMove;
+                    }
+                    else if (Board[p.X + 1, p.Y - 1].Colour == CheckerColour.Black && Board[p.X + 2, p.Y - 2].Colour == CheckerColour.Empty)
+                    {
+                        possibleMove = true;
+                        
+                        return possibleMove;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+
+                }
+                else if (Board[p.X + 1, p.Y + 1].Colour == CheckerColour.Red && Board[p.X + 1, p.Y - 1].Colour == CheckerColour.Red)
+                {
+                    possibleMove = false;
+                    return possibleMove;
+                }
+                else if (Board[p.X + 1, p.Y + 1].Colour == CheckerColour.Empty || Board[p.X + 1, p.Y - 1].Colour == CheckerColour.Empty)
+                {
+                    possibleMove = true;
+                   
+                    return possibleMove;
+                }
+                else if (p.X <= 5 && p.Y <= 5 && Board[p.X + 1, p.Y + 1].Colour == CheckerColour.Black && Board[p.X + 2, p.Y + 2].Colour == CheckerColour.Empty)
+                {
+                    possibleMove = true;
+                    
+                    return possibleMove;
+                }
+                else if (p.X < 6  && p.Y > 1 && Board[p.X + 1, p.Y - 1].Colour == CheckerColour.Black && Board[p.X + 2, p.Y - 2].Colour == CheckerColour.Empty)
+                {
+                    possibleMove = true;
+                    
+                    return possibleMove;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+
+            else
+            {
+                if (p.Y == 7 && p.X == 7)
+                {
+                    if (Board[p.X - 1, p.Y - 1].Colour == CheckerColour.Empty)
+                    {
+                        possibleMove = true;
+                        return possibleMove;
+                    }
+                    else if (Board[p.X - 1, p.Y - 1].Colour == CheckerColour.Black && Board[p.X - 2, p.Y - 2].Colour == CheckerColour.Empty)
+                    {
+                        possibleMove = true;
+                        return possibleMove;
+                    }
+                    else
+                    {
+                        possibleMove = false;
+                        return possibleMove;
+                    }
+                }
+                if (p.Y == 0 && p.X == 0)
+                {
+                    if (Board[p.X + 1, p.Y + 1].Colour == CheckerColour.Empty)
+                    {
+                        possibleMove = true;
+                        return possibleMove;
+                    }
+                   else if (Board[p.X + 1, p.Y + 1].Colour == CheckerColour.Black && Board[p.X + 2, p.Y + 2].Colour == CheckerColour.Empty)
+                    {
+                        possibleMove = true;
+                        return possibleMove;
+                    }
+                    else
+                    {
+                        possibleMove = false;
+                        return possibleMove;
+                    }
+                }
+                if (p.Y == 0)
+                {
+                    if (Board[p.X + 1, p.Y + 1].Colour == CheckerColour.Empty || Board[p.X - 1, p.Y + 1].Colour == CheckerColour.Empty)
+                    {
+                        possibleMove = true;
+                        return possibleMove;
+                    }
+                    else if (p.X < 6 && Board[p.X + 1, p.Y + 1].Colour == CheckerColour.Black && Board[p.X + 2, p.Y + 2].Colour == CheckerColour.Empty)
+                    {
+                        possibleMove = true;
+                        return possibleMove;
+                    }
+                    else if (Board[p.X - 1, p.Y + 1].Colour == CheckerColour.Black && Board[p.X - 2, p.Y + 2].Colour == CheckerColour.Empty)
+                    {
+                        possibleMove = true;
+                        return possibleMove;
+                    }
+                    else
+                    {
+                        possibleMove = false;
+                        return possibleMove;
+                    }
+                }
+                if (p.Y == 7)
+                {
+                    if (Board[p.X + 1, p.Y - 1].Colour == CheckerColour.Empty || Board[p.X - 1, p.Y - 1].Colour == CheckerColour.Empty)
+                    {
+                        possibleMove = true;
+                        return possibleMove;
+                    }
+                    else if (Board[p.X - 1, p.Y - 1].Colour == CheckerColour.Black && Board[p.X - 2, p.Y - 2].Colour == CheckerColour.Empty && p.X > 1)
+                    {
+                        possibleMove = true;
+                        return possibleMove;
+                    }
+                    else if (Board[p.X + 1, p.Y - 1].Colour == CheckerColour.Black && Board[p.X + 2, p.Y - 2].Colour == CheckerColour.Empty)
+                    {
+                        possibleMove = true;
+                        return possibleMove;
+                    }
+                    else { return false; }
+                }
+                if (p.X == 0)
+                {
+                    if (Board[p.X + 1, p.Y + 1].Colour == CheckerColour.Empty || Board[p.X + 1, p.Y - 1].Colour == CheckerColour.Empty)
+                    {
+                        possibleMove = true;
+                        return possibleMove;
+                    }
+                    else if (p.Y < 6 && Board[p.X + 1, p.Y + 1].Colour == CheckerColour.Black && Board[p.X + 2, p.Y + 2].Colour == CheckerColour.Empty)
+                    {
+                        possibleMove = true;
+                        return possibleMove;
+                    }
+                    else if (Board[p.X + 1, p.Y - 1].Colour == CheckerColour.Black && Board[p.X + 2, p.Y - 2].Colour == CheckerColour.Empty)
+                    {
+                        possibleMove = true;
+                        return possibleMove;
+                    }
+                    else { return false; }
+                }
+                if (p.X == 7)
+                {
+                    if (Board[p.X - 1, p.Y + 1].Colour == CheckerColour.Empty || Board[p.X - 1, p.Y - 1].Colour == CheckerColour.Empty)
+                    {
+                        possibleMove = true;
+                        return possibleMove;
+                    }
+                    else if (Board[p.X - 1, p.Y + 1].Colour == CheckerColour.Black && Board[p.X - 2, p.Y + 2].Colour == CheckerColour.Empty)
+                    {
+                        possibleMove = true;
+                        return possibleMove;
+                    }
+                    else if (p.Y > 1 && Board[p.X - 1, p.Y - 1].Colour == CheckerColour.Black && Board[p.X - 2, p.Y - 2].Colour == CheckerColour.Empty)
+                    {
+                        possibleMove = true;
+                        return possibleMove;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                if (Board[p.X + 1, p.Y + 1].Colour == CheckerColour.Empty || Board[p.X - 1, p.Y - 1].Colour == CheckerColour.Empty || Board[p.X + 1, p.Y - 1].Colour == CheckerColour.Empty || Board[p.X - 1, p.Y + 1].Colour == CheckerColour.Empty)
+                {
+                    possibleMove = true;
+                    return possibleMove;
+                }
+                if (p.X < 6 && p.Y < 6 && Board[p.X + 1, p.Y + 1].Colour == CheckerColour.Black && Board[p.X + 2, p.Y + 2].Colour == CheckerColour.Empty)
+                {
+                    possibleMove = true;
+                    return possibleMove;
+                }
+                if (Board[p.X - 1, p.Y + 1].Colour == CheckerColour.Black && Board[p.X - 2, p.Y + 2].Colour == CheckerColour.Empty && p.X > 1 && p.Y < 6)
+                {
+                    possibleMove = true;
+                    return possibleMove;
+                }
+                if (Board[p.X + 1, p.Y - 1].Colour == CheckerColour.Black && Board[p.X + 2, p.Y - 2].Colour == CheckerColour.Empty && p.X < 6 && p.Y > 1)
+                {
+                    possibleMove = true;
+                    return possibleMove;
+                }
+                if (Board[p.X - 1, p.Y - 1].Colour == CheckerColour.Black && Board[p.X - 2, p.Y - 2].Colour == CheckerColour.Empty && p.Y > 1 && p.X > 1)
+                {
+                    possibleMove = true;
+                    return possibleMove;
+                }
+
+
+
+
+            }
+                    
+                
+            
+            return possibleMove;
+        }
+
+        public bool isKing(int x, int y)
+        {
+           
+            if (Board[x,y].King == true)
+            {
+                Console.WriteLine("true");
+                return true;
+            }
+            else { return false; }
+        }
+        public bool isRed(int x, int y)
+        {
+            if (Board[x,y].Colour == CheckerColour.Red)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        public bool isBlack(int x, int y)
+        {
+            if (Board[x, y].Colour == CheckerColour.Black)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
     }
 }
